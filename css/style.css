@@ -1,0 +1,295 @@
+/* ==========================================================================
+   Portfolio de José Antonio
+   Hoja de estilos mobile-first: primero se define el diseño para móvil y
+   después se amplía para pantallas grandes con @media (min-width: ...).
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   1. Variables de color (modo claro y modo oscuro)
+   Todos los colores de la web salen de aquí. Para cambiar la paleta basta
+   con tocar estos valores.
+   -------------------------------------------------------------------------- */
+
+/* Modo claro: es el valor por defecto */
+:root {
+  color-scheme: light;
+  --fondo: #f6f7fb;
+  --texto: #161a33;
+  --apagado: #4a5280;     /* texto secundario */
+  --linea: #d5d9ec;       /* separadores */
+  --superficie: #ffffff;  /* fondo de botones y campos */
+  --acento: #0b5fd0;      /* enlaces y botón principal */
+  --sobre-acento: #ffffff;/* texto encima del color de acento */
+}
+
+/* Modo oscuro automático: se activa si el sistema del visitante está en oscuro,
+   salvo que haya elegido el modo claro con el botón (data-theme="light"). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --fondo: #12162b;
+    --texto: #eef0ff;
+    --apagado: #a3abd6;
+    --linea: #2b3463;
+    --superficie: #1a2040;
+    --acento: #5ec8ff;
+    --sobre-acento: #12162b;
+  }
+}
+
+/* Modo oscuro elegido a mano con el botón */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --fondo: #12162b;
+  --texto: #eef0ff;
+  --apagado: #a3abd6;
+  --linea: #2b3463;
+  --superficie: #1a2040;
+  --acento: #5ec8ff;
+  --sobre-acento: #12162b;
+}
+
+
+/* --------------------------------------------------------------------------
+   2. Base: reseteo mínimo y tipografía
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* el padding no agranda las cajas */
+}
+
+html {
+  scroll-behavior: smooth; /* los enlaces del menú se deslizan suavemente */
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 1rem;   /* 16 px */
+  line-height: 1.6;
+}
+
+h1, h2, h3 {
+  margin: 0;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0 0 1rem;
+  max-width: 62ch; /* líneas de lectura cómoda */
+}
+
+a {
+  color: var(--acento);
+  text-underline-offset: 0.2em;
+}
+
+/* Foco visible para quien navega con teclado */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 3px;
+}
+
+
+/* --------------------------------------------------------------------------
+   3. Estructura general
+   Cabecera, contenido y pie comparten el mismo ancho máximo y márgenes.
+   -------------------------------------------------------------------------- */
+
+header,
+main,
+footer {
+  width: min(60rem, 100% - 2.5rem); /* máximo 60 rem, con 1,25 rem de margen a cada lado en móvil */
+  margin-inline: auto;
+}
+
+
+/* --------------------------------------------------------------------------
+   4. Cabecera: menú, botón de tema, nombre y franja del espectro
+   -------------------------------------------------------------------------- */
+
+header {
+  padding-block: 1.25rem 3rem;
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;           /* en móvil, el botón baja si no cabe */
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 3rem;
+}
+
+nav {
+  display: flex;
+  gap: 1.25rem;
+}
+
+nav a {
+  color: var(--texto);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+nav a:hover {
+  color: var(--acento);
+  text-decoration: underline;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 9vw, 4.5rem); /* crece con la pantalla, con tope */
+  font-weight: 600;
+}
+
+.lema {
+  margin: 0.75rem 0 0;
+  font-size: clamp(1.125rem, 3vw, 1.375rem);
+  color: var(--apagado);
+}
+
+/* El detalle propio de la web: una franja con los colores del espectro visible,
+   la luz que se estudia en la calculadora TLAP. */
+header::after {
+  content: "";
+  display: block;
+  height: 4px;
+  margin-top: 2rem;
+  border-radius: 2px;
+  background: linear-gradient(90deg,
+      #6b1cff, #2d5bff, #19c3ff, #2de08a, #e8e83a, #ff9a2e, #ff3d3d);
+}
+
+/* Botón de cambio de tema: oculto hasta que el JavaScript confirma que funciona
+   (la clase "js" la añade un script del <head>). */
+.tema {
+  display: none;
+  padding: 0.4rem 0.8rem;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.js .tema {
+  display: inline-block;
+}
+
+.tema:hover {
+  border-color: var(--acento);
+}
+
+
+/* --------------------------------------------------------------------------
+   5. Secciones del contenido
+   -------------------------------------------------------------------------- */
+
+section {
+  padding-block: 2.5rem;
+  border-top: 1px solid var(--linea);
+  scroll-margin-top: 1rem; /* al saltar a una sección no queda pegada arriba */
+}
+
+h2 {
+  margin-bottom: 1.25rem;
+  font-size: 1.375rem;
+  font-weight: 600;
+}
+
+h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Proyectos: la línea de "Tecnologías" va en gris y más pequeña */
+article {
+  margin-bottom: 2rem;
+}
+
+article p:last-child {
+  margin-bottom: 0;
+  font-size: 0.9375rem;
+  color: var(--apagado);
+}
+
+/* Contacto: el enlace se convierte en un botón destacado */
+#contacto a {
+  display: inline-block;
+  padding: 0.7rem 1.25rem;
+  font-weight: 600;
+  color: var(--sobre-acento);
+  background: var(--acento);
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+#contacto a:hover {
+  text-decoration: underline;
+}
+
+
+/* --------------------------------------------------------------------------
+   6. Pie de página
+   -------------------------------------------------------------------------- */
+
+footer {
+  padding-block: 1.5rem 3rem;
+  border-top: 1px solid var(--linea);
+  font-size: 0.875rem;
+  color: var(--apagado);
+}
+
+footer p {
+  margin: 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   7. Pantallas grandes (a partir de 52 rem, unos 830 px)
+   El título de cada sección pasa a una columna a la izquierda y el contenido
+   a la derecha, usando CSS Grid.
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 52rem) {
+  header {
+    padding-block: 2rem 4rem;
+  }
+
+  section {
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 1fr);
+    column-gap: 2rem;
+  }
+
+  section > h2 {
+    grid-column: 1;
+    grid-row: 1;
+    margin-bottom: 0;
+  }
+
+  section > :not(h2) {
+    grid-column: 2;
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   8. Accesibilidad: si el usuario pide menos movimiento, sin desplazamiento suave
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
