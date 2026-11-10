@@ -15,6 +15,7 @@
      ------------------------------------------------------------------------ */
   var boton = document.getElementById('tema');
   var sistemaOscuro = window.matchMedia('(prefers-color-scheme: dark)');
+  var enTransicion = false;
 
   function modoActual() {
     var elegido = raiz.getAttribute('data-theme');
@@ -41,27 +42,75 @@
         document.dispatchEvent(new Event('temacambiado'));
       }
 
-      // Transición «simbionte» (ver style.css): la mancha sale del botón y
-      // debe crecer hasta tapar la esquina más lejana de la ventana.
+      // Transición «simbionte» (ver style.css): una capa oscura recortada con
+      // forma de mancha que sale del botón (a oscuro) o vuelve a él (a claro).
       var sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (!document.startViewTransition || sinMovimiento || raiz.dataset.transicion) {
+      if (sinMovimiento || enTransicion || !window.requestAnimationFrame) {
         aplicar();
         return;
       }
+      enTransicion = true;
       var caja = boton.getBoundingClientRect();
       var x = caja.left + caja.width / 2, y = caja.top + caja.height / 2;
       var lejos = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
-      raiz.style.setProperty('--tx', x + 'px');
-      raiz.style.setProperty('--ty', y + 'px');
-      // El núcleo de la mancha ocupa ~17 % del ancho del SVG a cada lado del centro
-      raiz.style.setProperty('--simbionte-final', Math.ceil(lejos / 0.16) + 'px');
-      raiz.dataset.transicion = nuevo === 'dark' ? 'oscurecer' : 'aclarar';
-      var limpiar = function () { delete raiz.dataset.transicion; };
-      try {
-        document.startViewTransition(aplicar).finished.then(limpiar, limpiar);
-      } catch (e) {
-        limpiar();
-        aplicar();
+      // El núcleo de la mancha ocupa ~16 % del ancho del SVG a cada lado del
+      // centro: con este tamaño final tapa hasta la esquina más lejana.
+      var total = Math.ceil(lejos / 0.16);
+      var aOscuro = nuevo === 'dark';
+      var DURACION = 1150;
+      var capa = document.createElement('div');
+      capa.className = 'simbionte';
+      capa.setAttribute('aria-hidden', 'true');
+
+      function recortar(avance) {            // avance: 0 = nada, 1 = todo tapado
+        var lado = total * avance;
+        var tam = lado + 'px ' + lado + 'px';
+        var pos = (x - lado / 2) + 'px ' + (y - lado / 2) + 'px';
+        capa.style.webkitMaskSize = tam;
+        capa.style.maskSize = tam;
+        capa.style.webkitMaskPosition = pos;
+        capa.style.maskPosition = pos;
+      }
+
+      function suave(t) {                    // arranca y frena despacio
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      }
+
+      function terminar() {
+        capa.remove();
+        enTransicion = false;
+      }
+
+      // Al aclarar, la página ya está oscura: la capa la tapa entera, se
+      // cambia el tema por debajo y la mancha se repliega.
+      recortar(aOscuro ? 0 : 1);
+      if (!aOscuro) capa.style.opacity = '0';
+      document.body.appendChild(capa);
+      if (aOscuro) {
+        animar();
+      } else {
+        capa.getBoundingClientRect();        // fija el estado inicial del fundido
+        capa.style.opacity = '1';
+        setTimeout(function () { aplicar(); animar(); }, 300);
+      }
+
+      function animar() {
+      var empieza = null;
+      requestAnimationFrame(function paso(ahora) {
+        if (empieza === null) empieza = ahora;
+        var t = Math.min((ahora - empieza) / DURACION, 1);
+        recortar(aOscuro ? suave(t) : 1 - suave(t));
+        if (t < 1) {
+          requestAnimationFrame(paso);
+        } else if (aOscuro) {
+          // Todo tapado: se cambia el tema y la capa se desvanece
+          aplicar();
+          capa.style.opacity = '0';
+          setTimeout(terminar, 300);
+        } else {
+          terminar();
+        }
+      });
       }
     });
     sistemaOscuro.addEventListener('change', pintarBoton);
