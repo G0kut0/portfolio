@@ -516,8 +516,26 @@ h1.titulo-proyecto {
   pointer-events: none;
 }
 
-.cabecera:has(.amanecer)::before {
+.cabecera.noche::before {
   display: none;
+}
+
+/* Con el amanecer en marcha (main.js añade la clase "noche") el cielo es
+   oscuro también en modo claro, así que el texto de la cabecera usa siempre
+   los colores del modo oscuro. */
+.cabecera.noche {
+  --texto: #f7f8f8;
+  --texto-2: #d0d6e0;
+  --apagado: #9da2ab;
+  --tenue: #7d828a;
+  --linea: rgba(255, 255, 255, 0.08);
+  --linea-fuerte: rgba(255, 255, 255, 0.2);
+  --superficie: rgba(255, 255, 255, 0.04);
+  --superficie-2: rgba(255, 255, 255, 0.09);
+  --acento: #8b97ff;
+  --boton: #e5e5e6;
+  --sobre-boton: #08090a;
+  --bien: #5fd39a;
 }
 
 .horizonte {

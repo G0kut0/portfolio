@@ -112,7 +112,8 @@
       var quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var ancho = 0, alto = 0, cima = 0, radio = 0, particulas = [];
       var inicio = null, anterior = 0, visible = true, pedido = null;
-      var oscuro = true, colorFondo = '#08090a';
+      var CIELO = '#08090a';    // el cielo es siempre de noche, también en modo claro
+      var colorFondo = CIELO;
       var raton = { x: 0, y: 0, dentro: false };
       var RADIO_EMPUJE = 120;   // px alrededor del puntero
 
@@ -143,7 +144,6 @@
       }
 
       function leerTema() {
-        oscuro = modoActual() === 'dark';
         colorFondo = getComputedStyle(raiz).getPropertyValue('--fondo').trim() || '#08090a';
       }
 
@@ -157,7 +157,10 @@
         ctx.setTransform(escala, 0, 0, escala, 0, 0);
         var reserva = hueco ? hueco.offsetHeight : 160;
         cima = alto - reserva * 0.55;
-        radio = Math.max(ancho * 1.15, 900);
+        // Radio suficiente para que la curva llegue a los bordes sin salirse
+        // del canvas (si no, el cielo quedaría cortado en recto por abajo)
+        var caida = reserva * 0.5;
+        radio = Math.max((ancho * ancho / 4 + caida * caida) / (2 * caida), ancho * 1.15, 900);
         var cuantas = Math.max(80, Math.min(320, Math.round(ancho * alto / 3600)));
         particulas = [];
         for (var i = 0; i < cuantas; i++) particulas.push(nueva(false));
@@ -174,11 +177,12 @@
         var pulso = quieto ? 1 : 0.94 + 0.06 * Math.sin(t * 0.7);
         var cx = ancho / 2;
 
-        ctx.clearRect(0, 0, ancho, alto);
+        ctx.fillStyle = CIELO;
+        ctx.fillRect(0, 0, ancho, alto);
 
         // 1. Resplandor del amanecer (elipse achatada tras el horizonte)
         var alcance = Math.min(ancho * 0.42, 460) * (0.35 + 0.65 * sale) * pulso;
-        var fuerza = (oscuro ? 1 : 0.55) * sale;
+        var fuerza = sale;
         ctx.save();
         ctx.translate(cx, cima + 6);
         ctx.scale(1, 0.62);
@@ -230,15 +234,16 @@
             * (0.35 + 0.65 * sale);
           alfa = Math.min(alfa * (0.9 + cerca * 0.9), 0.9);
           if (alfa < 0.02) continue;
-          var tono = oscuro
-            ? Math.round(170 + 85 * cerca) + ',' + Math.round(175 + 45 * cerca) + ',' + Math.round(190 - 20 * cerca)
-            : Math.round(70 + 90 * cerca) + ',' + Math.round(74 + 20 * cerca) + ',' + Math.round(86 - 30 * cerca);
+          var tono = Math.round(170 + 85 * cerca) + ',' + Math.round(175 + 45 * cerca)
+            + ',' + Math.round(190 - 20 * cerca);
           ctx.font = p.talla + 'px "JetBrains Mono", ui-monospace, monospace';
           ctx.fillStyle = 'rgba(' + tono + ',' + alfa + ')';
           ctx.fillText(p.signo, p.x, p.y);
         }
 
-        // 3. El planeta: tapa lo que queda por debajo del horizonte
+        // 3. El planeta: tapa lo que queda por debajo del horizonte. Se pinta
+        //    del color de fondo de la página, así que en modo claro el planeta
+        //    que asoma es la propia página.
         ctx.beginPath();
         ctx.arc(cx, cima + radio, radio, 0, 6.2832);
         ctx.fillStyle = colorFondo;
@@ -268,6 +273,7 @@
         if (pedido === null) pedido = requestAnimationFrame(pintar);
       }
 
+      lienzo.parentElement.classList.add('noche');   // texto claro sobre el cielo
       leerTema();
       medir();
       pedir();
