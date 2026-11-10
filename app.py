@@ -204,6 +204,15 @@ def crear_app(config=None):
             return valor
         return url_for("archivo", nombre=valor)
 
+    def estatico(nombre):
+        """Enlace a un archivo de static/ con su fecha de cambio, para que el
+        navegador no siga usando una copia antigua tras actualizar la web."""
+        try:
+            version = int(os.path.getmtime(os.path.join(app.static_folder, nombre)))
+        except OSError:
+            version = 0
+        return url_for("static", filename=nombre, v=version)
+
     @app.template_filter("parrafos")
     def parrafos(texto):
         trozos = [t.strip() for t in re.split(r"\n\s*\n", texto or "") if t.strip()]
@@ -216,7 +225,7 @@ def crear_app(config=None):
 
     @app.context_processor
     def comunes():
-        return {"csrf_token": csrf_token, "media": media, "entidades": ENTIDADES}
+        return {"csrf_token": csrf_token, "media": media, "estatico": estatico, "entidades": ENTIDADES}
 
     def login_requerido(vista):
         @wraps(vista)

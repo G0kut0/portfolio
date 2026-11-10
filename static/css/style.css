@@ -503,6 +503,36 @@ h1.titulo-proyecto {
 }
 
 
+/* Amanecer (solo en la portada): un canvas que dibuja el horizonte de un
+   planeta, la luz que asoma por detrás y símbolos que flotan hacia arriba.
+   Lo pinta main.js; .horizonte reserva el hueco bajo el texto. Sin JavaScript
+   ese hueco se queda en la línea del espectro de siempre. */
+.amanecer {
+  position: absolute;
+  inset: 0 calc(50% - 50vw);
+  z-index: -1;
+  width: 100vw;
+  height: 100%;
+  pointer-events: none;
+}
+
+.cabecera:has(.amanecer)::before {
+  display: none;
+}
+
+.horizonte {
+  height: 2px;
+  margin-top: clamp(3rem, 8vw, 5.5rem);
+  background: var(--espectro);
+}
+
+.js .horizonte {
+  height: clamp(9rem, 20vw, 15rem);
+  margin-top: 0;
+  background: none;
+}
+
+
 /* --------------------------------------------------------------------------
    6. Secciones
    -------------------------------------------------------------------------- */
