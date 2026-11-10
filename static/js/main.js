@@ -33,9 +33,36 @@
   if (boton) {
     boton.addEventListener('click', function () {
       var nuevo = modoActual() === 'dark' ? 'light' : 'dark';
-      raiz.setAttribute('data-theme', nuevo);
-      try { localStorage.setItem('tema', nuevo); } catch (e) { /* solo esta visita */ }
-      pintarBoton();
+
+      function aplicar() {
+        raiz.setAttribute('data-theme', nuevo);
+        try { localStorage.setItem('tema', nuevo); } catch (e) { /* solo esta visita */ }
+        pintarBoton();
+        document.dispatchEvent(new Event('temacambiado'));
+      }
+
+      // Transición «simbionte» (ver style.css): la mancha sale del botón y
+      // debe crecer hasta tapar la esquina más lejana de la ventana.
+      var sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!document.startViewTransition || sinMovimiento || raiz.dataset.transicion) {
+        aplicar();
+        return;
+      }
+      var caja = boton.getBoundingClientRect();
+      var x = caja.left + caja.width / 2, y = caja.top + caja.height / 2;
+      var lejos = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+      raiz.style.setProperty('--tx', x + 'px');
+      raiz.style.setProperty('--ty', y + 'px');
+      // El núcleo de la mancha ocupa ~17 % del ancho del SVG a cada lado del centro
+      raiz.style.setProperty('--simbionte-final', Math.ceil(lejos / 0.16) + 'px');
+      raiz.dataset.transicion = nuevo === 'dark' ? 'oscurecer' : 'aclarar';
+      var limpiar = function () { delete raiz.dataset.transicion; };
+      try {
+        document.startViewTransition(aplicar).finished.then(limpiar, limpiar);
+      } catch (e) {
+        limpiar();
+        aplicar();
+      }
     });
     sistemaOscuro.addEventListener('change', pintarBoton);
     pintarBoton();
@@ -307,7 +334,7 @@
       window.addEventListener('pointercancel', function () { raton.dentro = false; });
 
       // Al cambiar de tema, los colores del canvas se vuelven a leer
-      if (boton) boton.addEventListener('click', function () { leerTema(); pedir(); });
+      document.addEventListener('temacambiado', function () { leerTema(); pedir(); });
       sistemaOscuro.addEventListener('change', function () { leerTema(); pedir(); });
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(pedir);
     })();

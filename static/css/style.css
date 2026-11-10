@@ -257,6 +257,56 @@ img {
 }
 
 
+/* Cambio de tema «simbionte»: al pulsar el botón de tema, una mancha negra
+   con tentáculos sale del botón y se adueña de la pantalla (al pasar a
+   oscuro) o se repliega hacia él (al pasar a claro). Usa la API de View
+   Transitions: el navegador hace una foto del antes y del después, y aquí
+   se recorta una de ellas con la forma de static/simbionte.svg.
+   main.js pone data-transicion y las variables --tx, --ty y --simbionte-final.
+   Donde no hay soporte, el tema cambia al instante, como siempre. */
+@property --simbionte {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+html[data-transicion]::view-transition-old(root),
+html[data-transicion]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html[data-transicion="oscurecer"]::view-transition-new(root),
+html[data-transicion="aclarar"]::view-transition-old(root) {
+  z-index: 2;
+  -webkit-mask-image: url("../simbionte.svg");
+  mask-image: url("../simbionte.svg");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: var(--simbionte) var(--simbionte);
+  mask-size: var(--simbionte) var(--simbionte);
+  -webkit-mask-position: calc(var(--tx) - var(--simbionte) / 2) calc(var(--ty) - var(--simbionte) / 2);
+  mask-position: calc(var(--tx) - var(--simbionte) / 2) calc(var(--ty) - var(--simbionte) / 2);
+}
+
+html[data-transicion="oscurecer"]::view-transition-new(root) {
+  animation: simbionte 1.25s cubic-bezier(0.6, 0, 0.25, 1) both;
+}
+
+html[data-transicion="aclarar"]::view-transition-old(root) {
+  animation: simbionte 1.1s cubic-bezier(0.6, 0, 0.25, 1) reverse both;
+}
+
+html[data-transicion="aclarar"]::view-transition-new(root) {
+  z-index: 1;
+}
+
+@keyframes simbionte {
+  from { --simbionte: 0px; }
+  to { --simbionte: var(--simbionte-final); }
+}
+
+
 /* --------------------------------------------------------------------------
    4. Barra superior fija
    -------------------------------------------------------------------------- */
