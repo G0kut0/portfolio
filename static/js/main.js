@@ -113,6 +113,8 @@
       var ancho = 0, alto = 0, cima = 0, radio = 0, particulas = [];
       var inicio = null, anterior = 0, visible = true, pedido = null;
       var oscuro = true, colorFondo = '#08090a';
+      var raton = { x: 0, y: 0, dentro: false };
+      var RADIO_EMPUJE = 120;   // px alrededor del puntero
 
       function azar(a, b) { return a + Math.random() * (b - a); }
 
@@ -133,6 +135,8 @@
           talla: azar(9, 14),
           brillo: azar(0.25, 0.9),
           fase: azar(0, 6.28),
+          ex: 0,            // empujón del ratón, que se va frenando
+          ey: 0,
           edad: alNacer ? 0 : 5,
           signo: SIMBOLOS[Math.floor(Math.random() * SIMBOLOS.length)]
         };
@@ -154,7 +158,7 @@
         var reserva = hueco ? hueco.offsetHeight : 160;
         cima = alto - reserva * 0.55;
         radio = Math.max(ancho * 1.15, 900);
-        var cuantas = Math.max(36, Math.min(130, Math.round(ancho * alto / 9500)));
+        var cuantas = Math.max(80, Math.min(320, Math.round(ancho * alto / 3600)));
         particulas = [];
         for (var i = 0; i < cuantas; i++) particulas.push(nueva(false));
       }
@@ -195,8 +199,22 @@
         for (var i = 0; i < particulas.length; i++) {
           var p = particulas[i];
           if (!quieto) {
-            p.x += p.vx * dt;
-            p.y += p.vy * dt;
+            // El puntero aparta los símbolos cercanos; el empujón se amortigua
+            if (raton.dentro) {
+              var ex = p.x - raton.x, ey = p.y - raton.y;
+              var lejos = Math.hypot(ex, ey);
+              if (lejos < RADIO_EMPUJE) {
+                var empuje = Math.pow(1 - lejos / RADIO_EMPUJE, 2) * 1400 * dt;
+                lejos = lejos || 1;
+                p.ex += ex / lejos * empuje;
+                p.ey += ey / lejos * empuje;
+              }
+            }
+            var freno = Math.exp(-2.2 * dt);
+            p.ex *= freno;
+            p.ey *= freno;
+            p.x += (p.vx + p.ex) * dt;
+            p.y += (p.vy + p.ey) * dt;
             p.edad += dt;
             if (p.y < -20 || p.x < -20 || p.x > ancho + 20) {
               particulas[i] = p = nueva(true);
@@ -268,6 +286,20 @@
       document.addEventListener('visibilitychange', function () {
         if (!document.hidden) { anterior = performance.now(); pedir(); }
       });
+      // Posición del puntero respecto al canvas (el canvas no recibe eventos
+      // porque está detrás del texto, así que se escucha en la ventana)
+      window.addEventListener('pointermove', function (e) {
+        var caja = lienzo.getBoundingClientRect();
+        raton.x = e.clientX - caja.left;
+        raton.y = e.clientY - caja.top;
+        raton.dentro = raton.y > -RADIO_EMPUJE && raton.y < caja.height + RADIO_EMPUJE;
+      }, { passive: true });
+      raiz.addEventListener('mouseleave', function () { raton.dentro = false; });
+      window.addEventListener('pointerup', function (e) {
+        if (e.pointerType !== 'mouse') raton.dentro = false;   // al levantar el dedo
+      });
+      window.addEventListener('pointercancel', function () { raton.dentro = false; });
+
       // Al cambiar de tema, los colores del canvas se vuelven a leer
       if (boton) boton.addEventListener('click', function () { leerTema(); pedir(); });
       sistemaOscuro.addEventListener('change', function () { leerTema(); pedir(); });
