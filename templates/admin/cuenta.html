@@ -1,0 +1,19 @@
+{% extends "admin/base.html" %}
+{% block seccion %}Cuenta{% endblock %}
+{% block contenido %}
+    <h1>Cuenta</h1>
+    <p class="apagado">Usuario: {{ g.admin.usuario }}</p>
+    <h2>Cambiar contraseña</h2>
+    {% if error %}<p class="aviso aviso-error" role="alert">{{ error }}</p>{% endif %}
+    <form class="formulario" method="post">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      <p class="campo"><label for="actual">Contraseña actual</label>
+        <input id="actual" name="actual" type="password" required autocomplete="current-password"></p>
+      <p class="campo"><label for="nueva">Contraseña nueva</label>
+        <input id="nueva" name="nueva" type="password" required minlength="10" autocomplete="new-password">
+        <span class="ayuda">Mínimo 10 caracteres.</span></p>
+      <p class="campo"><label for="repetir">Repite la contraseña nueva</label>
+        <input id="repetir" name="repetir" type="password" required autocomplete="new-password"></p>
+      <button class="boton" type="submit">Cambiar contraseña</button>
+    </form>
+{% endblock %}

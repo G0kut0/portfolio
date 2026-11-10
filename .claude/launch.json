@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "portfolio",
+      "runtimeExecutable": ".venv/bin/flask",
+      "runtimeArgs": ["--app", "app", "run", "--port", "5057"],
+      "port": 5057
+    }
+  ]
+}

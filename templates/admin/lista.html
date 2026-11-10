@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% block seccion %}{{ ent.plural }}{% endblock %}
+{% block contenido %}
+    <div class="fila-titulo">
+      <h1>{{ ent.plural }}</h1>
+      <a class="boton" href="{{ url_for('admin_editar', nombre=nombre) }}">Añadir {{ ent.singular }}</a>
+    </div>
+    {% if filas %}
+    <div class="tabla-caja">
+      <table>
+        <thead>
+          <tr>{% for col in ent.lista %}<th scope="col">{{ etiquetas[col][1] }}</th>{% endfor %}<th scope="col"><span class="oculto">Acciones</span></th></tr>
+        </thead>
+        <tbody>
+          {% for f in filas %}
+          <tr>
+            {% for col in ent.lista %}
+            {% set tipo = etiquetas[col][2] %}
+            <td>
+              {%- if loop.first %}<a href="{{ url_for('admin_editar', nombre=nombre, id=f.id) }}">{{ f[col] }}</a>
+              {%- elif tipo == 'si_no' %}{{ 'Sí' if f[col] else 'No' }}
+              {%- elif tipo == 'opcion' %}{{ dict(etiquetas[col][3].opciones).get(f[col], f[col]) }}
+              {%- elif tipo == 'nivel' %}{{ f[col] }}/5
+              {%- else %}{{ f[col] or '—' }}{% endif -%}
+            </td>
+            {% endfor %}
+            <td class="acciones">
+              <a href="{{ url_for('admin_editar', nombre=nombre, id=f.id) }}">Editar</a>
+              <form method="post" action="{{ url_for('admin_borrar', nombre=nombre, id=f.id) }}" data-confirmar="¿Borrar «{{ f[ent.lista[0]] }}»? No se puede deshacer.">
+                <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+                <button class="enlace peligro" type="submit">Borrar</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="vacio">No hay nada todavía. Añade el primero con el botón de arriba.</p>
+    {% endif %}
+{% endblock %}

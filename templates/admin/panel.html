@@ -1,0 +1,31 @@
+{% extends "admin/base.html" %}
+{% block contenido %}
+    <h1>Hola, {{ g.admin.usuario }}</h1>
+    <p class="apagado">{% if session.acceso_anterior %}Último acceso anterior: {{ session.acceso_anterior }} (UTC).{% else %}Este es tu primer acceso.{% endif %}</p>
+
+    <div class="rejilla">
+      <a class="tarjeta enlace-tarjeta" href="{{ url_for('admin_perfil') }}">
+        <h2>Perfil</h2><p>Nombre, titular, bio, foto, CV y redes.</p>
+      </a>
+      {% for clave, ent in entidades.items() %}
+      <a class="tarjeta enlace-tarjeta" href="{{ url_for('admin_lista', nombre=clave) }}">
+        <h2>{{ ent.plural }}</h2><p class="cifra">{{ cuentas[clave] }}</p>
+      </a>
+      {% endfor %}
+      <a class="tarjeta enlace-tarjeta" href="{{ url_for('admin_mensajes') }}">
+        <h2>Mensajes</h2><p class="cifra">{{ g.sin_leer }} <small>sin leer</small></p>
+      </a>
+    </div>
+
+    <h2>Últimos mensajes</h2>
+    {% if recientes %}
+    <ul class="logros">
+      {% for m in recientes %}
+      <li>{% if not m.leido %}<span class="marca">Nuevo</span> {% endif %}<strong>{{ m.nombre }}</strong> <span class="fechas">{{ m.fecha }}</span><br>{{ m.mensaje|truncate(140) }}</li>
+      {% endfor %}
+    </ul>
+    <p><a href="{{ url_for('admin_mensajes') }}">Ver todos los mensajes</a></p>
+    {% else %}
+    <p class="vacio">Todavía no has recibido mensajes.</p>
+    {% endif %}
+{% endblock %}

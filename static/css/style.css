@@ -1,0 +1,1429 @@
+/* ==========================================================================
+   Portfolio de José Antonio
+   Dirección visual tomada del análisis de docs/diseno/linear.app.md:
+   fondo casi negro, jerarquía por luminosidad, bordes finísimos en vez de
+   sombras, Inter con peso 510 y tracking negativo, y movimiento corto.
+   El detalle propio sigue siendo el espectro visible (la luz de la TLAP).
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   1. Variables (modo claro y modo oscuro)
+   -------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+  --fondo: #fbfbfc;
+  --fondo-2: #f2f3f5;       /* paneles y barra lateral */
+  --texto: #0d0e10;         /* títulos */
+  --texto-2: #2b2e34;       /* cuerpo */
+  --apagado: #5f646d;       /* texto de apoyo */
+  --tenue: #868b94;         /* metadatos */
+  --linea: rgba(0, 0, 0, 0.09);
+  --linea-fuerte: rgba(0, 0, 0, 0.18);
+  --superficie: #ffffff;
+  --superficie-2: rgba(0, 0, 0, 0.04);
+  --acento: #4b57c9;
+  --boton: #0d0e10;
+  --sobre-boton: #ffffff;
+  --peligro: #b3261e;
+  --bien: #1b6e3c;
+  --brillo: rgba(75, 87, 201, 0.10);   /* foco de luz de las tarjetas */
+  --sombra: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.05);
+
+  --espectro: linear-gradient(90deg,
+      #6b1cff, #2d5bff, #19c3ff, #2de08a, #e8e83a, #ff9a2e, #ff3d3d);
+  --curva: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+/* Modo oscuro automático (sistema en oscuro y sin elección manual de claro) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --fondo: #08090a;
+    --fondo-2: #0f1011;
+    --texto: #f7f8f8;
+    --texto-2: #d0d6e0;
+    --apagado: #8a8f98;
+    --tenue: #6f737b;
+    --linea: rgba(255, 255, 255, 0.08);
+    --linea-fuerte: rgba(255, 255, 255, 0.16);
+    --superficie: rgba(255, 255, 255, 0.03);
+    --superficie-2: rgba(255, 255, 255, 0.06);
+    --acento: #8b97ff;
+    --boton: #e5e5e6;
+    --sobre-boton: #08090a;
+    --peligro: #ff8a94;
+    --bien: #5fd39a;
+    --brillo: rgba(255, 255, 255, 0.07);
+    --sombra: none;
+  }
+}
+
+/* Modo oscuro elegido a mano con el botón */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --fondo: #08090a;
+  --fondo-2: #0f1011;
+  --texto: #f7f8f8;
+  --texto-2: #d0d6e0;
+  --apagado: #8a8f98;
+  --tenue: #6f737b;
+  --linea: rgba(255, 255, 255, 0.08);
+  --linea-fuerte: rgba(255, 255, 255, 0.16);
+  --superficie: rgba(255, 255, 255, 0.03);
+  --superficie-2: rgba(255, 255, 255, 0.06);
+  --acento: #8b97ff;
+  --boton: #e5e5e6;
+  --sobre-boton: #08090a;
+  --peligro: #ff8a94;
+  --bien: #5fd39a;
+  --brillo: rgba(255, 255, 255, 0.07);
+  --sombra: none;
+}
+
+
+/* --------------------------------------------------------------------------
+   2. Base
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem; /* la barra fija no tapa el título al saltar */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Transición suave al pasar de una página a otra (navegadores compatibles) */
+@view-transition {
+  navigation: auto;
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto-2);
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip; /* los fondos decorativos no crean scroll horizontal */
+}
+
+h1, h2, h3 {
+  margin: 0;
+  color: var(--texto);
+  font-weight: 510;
+  line-height: 1.05;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0 0 1rem;
+  max-width: 62ch;
+}
+
+a {
+  color: var(--acento);
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+  text-underline-offset: 0.22em;
+  transition: color 0.1s var(--curva), text-decoration-color 0.1s var(--curva);
+}
+
+a:hover {
+  text-decoration-color: currentColor;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--acento) 35%, transparent);
+}
+
+.ancho {
+  width: min(68rem, 100% - 2.5rem);
+  margin-inline: auto;
+}
+
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.apagado,
+.ayuda,
+.vacio {
+  color: var(--apagado);
+}
+
+.fechas,
+.antetitulo,
+.indice {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0;
+  color: var(--tenue);
+}
+
+.antetitulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+
+/* --------------------------------------------------------------------------
+   3. Movimiento
+   - .entra: aparición al cargar (de desenfocado a nítido), escalonada con --i.
+   - [data-reveal]: lo mismo al entrar en pantalla (lo activa main.js).
+   -------------------------------------------------------------------------- */
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(0.6rem);
+  }
+}
+
+.entra {
+  animation: entrar 0.9s var(--curva) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+.js [data-reveal] {
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(1rem);
+  transition: opacity 0.7s var(--curva), filter 0.7s var(--curva), transform 0.7s var(--curva);
+  transition-delay: calc(var(--i, 0) * 70ms);
+}
+
+.js [data-reveal].visto {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+
+/* Barra de progreso de lectura con los colores del espectro */
+.progreso {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 30;
+  height: 2px;
+  background: var(--espectro);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+@supports (animation-timeline: scroll()) {
+  .progreso {
+    animation: avanzar linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@keyframes avanzar {
+  to { transform: scaleX(1); }
+}
+
+
+/* --------------------------------------------------------------------------
+   4. Barra superior fija
+   -------------------------------------------------------------------------- */
+
+.barra-fija {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--fondo) 78%, transparent);
+  border-bottom: 1px solid var(--linea);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 3.5rem;
+}
+
+.monograma {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--sobre-boton);
+  background: var(--boton);
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.barra nav {
+  display: flex;
+  gap: 0.25rem;
+  margin-inline: auto;
+  overflow-x: auto;       /* en móvil el menú se desliza, no se parte */
+  scrollbar-width: none;
+}
+
+.barra nav a,
+.admin-lateral nav a {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.8125rem;
+  font-weight: 510;
+  white-space: nowrap;
+  color: var(--apagado);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: color 0.1s var(--curva), background 0.1s var(--curva);
+}
+
+.barra nav a:hover,
+.barra nav a[aria-current],
+.admin-lateral nav a:hover,
+.admin-lateral nav a[aria-current] {
+  color: var(--texto);
+}
+
+.barra nav a[aria-current],
+.admin-lateral nav a[aria-current] {
+  background: var(--superficie-2);
+}
+
+/* Botón de tema: icono de sol o de luna según el modo actual */
+.icono {
+  display: none;
+  place-items: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: var(--apagado);
+  background: none;
+  border: 1px solid var(--linea);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color 0.1s var(--curva), border-color 0.1s var(--curva), transform 0.16s var(--curva);
+}
+
+.js .icono {
+  display: grid;
+}
+
+.icono:hover {
+  color: var(--texto);
+  border-color: var(--linea-fuerte);
+}
+
+.icono:active {
+  transform: scale(0.94);
+}
+
+.icono .luna,
+.icono[data-modo="dark"] .sol {
+  display: block;
+}
+
+.icono .sol,
+.icono[data-modo="dark"] .luna {
+  display: none;
+}
+
+.icono[data-modo="dark"] .sol {
+  display: block;
+}
+
+
+/* --------------------------------------------------------------------------
+   5. Cabecera (héroe)
+   -------------------------------------------------------------------------- */
+
+.cabecera {
+  position: relative;
+}
+
+/* Rejilla de puntos de fondo, que se desvanece hacia abajo */
+.cabecera::before {
+  content: "";
+  position: absolute;
+  inset: 0 calc(50% - 50vw); /* de borde a borde de la ventana */
+  z-index: -1;
+  background-image: radial-gradient(var(--linea-fuerte) 1px, transparent 1px);
+  background-size: 24px 24px;
+  -webkit-mask-image: radial-gradient(ellipse 50% 85% at 50% 0%, #000 0%, transparent 75%);
+  mask-image: radial-gradient(ellipse 50% 85% at 50% 0%, #000 0%, transparent 75%);
+  opacity: 0.7;
+}
+
+.heroe {
+  padding-block: clamp(4rem, 12vw, 8.5rem) 0;
+}
+
+.heroe-corto {
+  padding-top: clamp(2.5rem, 7vw, 5rem);
+}
+
+.pulso {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--bien);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--bien) 60%, transparent);
+  animation: latir 2.4s ease-out infinite;
+}
+
+@keyframes latir {
+  to { box-shadow: 0 0 0 0.6rem transparent; }
+}
+
+.presentacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem 1.75rem;
+}
+
+.foto {
+  width: clamp(4.5rem, 12vw, 7rem);
+  height: clamp(4.5rem, 12vw, 7rem);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--linea-fuerte);
+}
+
+h1 {
+  font-size: clamp(2.75rem, 10vw, 5.5rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+h1 span {
+  display: inline-block;
+}
+
+h1.titulo-proyecto {
+  font-size: clamp(2.25rem, 7vw, 4rem);
+}
+
+.lema {
+  margin: 1.5rem 0 0;
+  max-width: 34ch;
+  font-size: clamp(1.125rem, 2.6vw, 1.5rem);
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  color: var(--apagado);
+}
+
+.llamadas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 2rem 0 0;
+}
+
+.migas {
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.migas a {
+  color: var(--apagado);
+  text-decoration: none;
+}
+
+.migas a:hover {
+  color: var(--texto);
+}
+
+/* El haz: una línea con el espectro visible que se dibuja de izquierda a
+   derecha, con su resplandor debajo. Es la firma de la web (la luz TLAP). */
+.haz {
+  position: relative;
+  height: 2px;
+  margin-top: clamp(3rem, 8vw, 5.5rem);
+  border-radius: 2px;
+  background: var(--espectro);
+  transform-origin: left;
+  animation: trazar 1.4s 0.35s var(--curva) both;
+}
+
+.haz::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 -3.5rem;
+  background: var(--espectro);
+  filter: blur(28px);
+  opacity: 0.28;
+  -webkit-mask-image: linear-gradient(#000, transparent);
+  mask-image: linear-gradient(#000, transparent);
+  animation: respirar 6s ease-in-out infinite alternate;
+}
+
+@keyframes trazar {
+  from { transform: scaleX(0); opacity: 0; }
+}
+
+@keyframes respirar {
+  to { opacity: 0.5; }
+}
+
+
+/* --------------------------------------------------------------------------
+   6. Secciones
+   -------------------------------------------------------------------------- */
+
+main > section {
+  padding-block: clamp(4rem, 10vw, 8rem) 0;
+}
+
+main > section:last-child {
+  padding-bottom: clamp(4rem, 10vw, 8rem);
+}
+
+.cabeza {
+  margin-bottom: clamp(1.75rem, 4vw, 3rem);
+}
+
+h2 {
+  font-size: clamp(1.875rem, 5vw, 3rem);
+}
+
+h3 {
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
+}
+
+.subtitulo {
+  margin: 3rem 0 1.25rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tenue);
+}
+
+/* Dos columnas en pantallas grandes */
+.dos {
+  display: grid;
+  gap: 2rem;
+}
+
+.bio p,
+.grande {
+  font-size: clamp(1.0625rem, 2vw, 1.3125rem);
+  line-height: 1.5;
+  letter-spacing: -0.015em;
+  color: var(--texto-2);
+}
+
+ul.datos,
+ul.etiquetas,
+ul.niveles,
+ul.logros,
+ol.linea-tiempo {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.datos li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.7rem;
+  font-size: 0.9375rem;
+  border-top: 1px solid var(--linea);
+  overflow-wrap: anywhere;
+}
+
+.datos li:last-child {
+  border-bottom: 1px solid var(--linea);
+}
+
+.datos span {
+  flex: none;
+  color: var(--tenue);
+}
+
+/* Paneles y tarjetas: relleno casi imperceptible y borde fino */
+.panel,
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: 12px;
+  box-shadow: var(--sombra);
+}
+
+.panel {
+  padding: 1.5rem;
+}
+
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(17rem, 100%), 1fr));
+  gap: 0.75rem;
+}
+
+.tarjeta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.25rem;
+  overflow: hidden;
+}
+
+.tarjeta p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--apagado);
+}
+
+.tarjeta img {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* Tarjetas de proyecto: el foco de luz sigue al puntero (--mx/--my vienen
+   de main.js) y la flecha se desplaza al pasar por encima. */
+.foco {
+  min-height: 12.5rem;
+  transition: border-color 0.16s var(--curva), transform 0.16s var(--curva);
+}
+
+.js .foco {
+  transition: opacity 0.7s var(--curva), filter 0.7s var(--curva),
+    transform 0.7s var(--curva), border-color 0.16s var(--curva);
+}
+
+.foco::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(22rem circle at var(--mx, 50%) var(--my, 0%), var(--brillo), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+  pointer-events: none;
+}
+
+.foco:hover {
+  border-color: var(--linea-fuerte);
+}
+
+.foco:hover::before {
+  opacity: 1;
+}
+
+.foco.destacada::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--espectro);
+  opacity: 0.8;
+}
+
+.indice {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.tarjeta .indice {
+  font-size: 0.75rem;
+  color: var(--tenue);
+}
+
+.tarjeta h3 a {
+  color: var(--texto);
+  text-decoration: none;
+}
+
+/* El enlace del título cubre toda la tarjeta */
+.estirado::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.tarjeta .etiquetas {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  padding-right: 1.5rem;
+}
+
+.flecha {
+  position: absolute;
+  right: 1.25rem;
+  bottom: 1.1rem;
+  color: var(--tenue);
+  transition: transform 0.16s var(--curva), color 0.16s var(--curva);
+}
+
+.foco:hover .flecha {
+  color: var(--texto);
+  transform: translateX(4px);
+}
+
+.marca,
+.contador {
+  padding: 0.1rem 0.5rem;
+  font-family: var(--sans);
+  font-size: 0.6875rem;
+  font-weight: 510;
+  letter-spacing: 0;
+  color: var(--texto-2);
+  background: var(--superficie-2);
+  border: 1px solid var(--linea);
+  border-radius: 9999px;
+}
+
+.etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.etiquetas li {
+  padding: 0.1rem 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0;
+  color: var(--apagado);
+  border: 1px solid var(--linea);
+  border-radius: 9999px;
+}
+
+/* Ficha de proyecto */
+.ficha {
+  padding-top: clamp(2.5rem, 6vw, 4rem);
+}
+
+.ficha aside {
+  align-self: start;
+}
+
+.ficha aside .antetitulo {
+  margin: 1.5rem 0 0.6rem;
+}
+
+.ficha aside .antetitulo:first-child {
+  margin-top: 0;
+}
+
+.ficha aside .llamadas {
+  margin-top: 1.5rem;
+}
+
+.imagen-proyecto {
+  display: block;
+  margin-bottom: 2rem;
+  border: 1px solid var(--linea);
+  border-radius: 12px;
+}
+
+/* Habilidades */
+.grupos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(17rem, 100%), 1fr));
+  gap: 2.5rem 3rem;
+}
+
+.grupo h3 {
+  margin-bottom: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tenue);
+}
+
+.niveles li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.6rem;
+  font-size: 0.9375rem;
+  color: var(--texto);
+  border-top: 1px solid var(--linea);
+}
+
+.nivel {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.nivel i {
+  width: 1rem;
+  height: 0.25rem;
+  border-radius: 2px;
+  background: var(--superficie-2);
+  box-shadow: inset 0 0 0 1px var(--linea);
+}
+
+.nivel i.lleno {
+  background: var(--texto);
+  box-shadow: none;
+}
+
+/* Las barras se rellenan una a una cuando el grupo entra en pantalla */
+.js .grupo .nivel i.lleno {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s var(--curva);
+  transition-delay: calc(0.25s + var(--n) * 70ms);
+}
+
+.js .grupo.visto .nivel i.lleno {
+  transform: none;
+}
+
+/* Formación: línea de tiempo */
+.linea-tiempo {
+  position: relative;
+  max-width: 44rem;
+  border-left: 1px solid var(--linea-fuerte);
+}
+
+.estudio {
+  position: relative;
+  padding: 0 0 2.5rem 1.75rem;
+}
+
+.estudio:last-child {
+  padding-bottom: 0;
+}
+
+.estudio::before {
+  content: "";
+  position: absolute;
+  left: -0.3rem;
+  top: 0.3rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--fondo);
+  border: 1px solid var(--texto);
+}
+
+.estudio h3 {
+  font-size: 1.25rem;
+}
+
+.estudio p {
+  margin: 0.25rem 0 0;
+  color: var(--apagado);
+}
+
+.estudio .centro {
+  color: var(--texto-2);
+}
+
+/* Logros */
+.logros strong {
+  font-weight: 510;
+  color: var(--texto);
+}
+
+
+/* --------------------------------------------------------------------------
+   7. Formularios, botones y avisos (contacto y panel)
+   -------------------------------------------------------------------------- */
+
+.formulario {
+  max-width: 36rem;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0 0 1.1rem;
+  max-width: none;
+}
+
+.campo label {
+  font-size: 0.8125rem;
+  font-weight: 510;
+  color: var(--texto);
+}
+
+.campo-casilla label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 400;
+}
+
+input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--acento);
+}
+
+input:not([type="checkbox"]),
+select,
+textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font: inherit;
+  font-size: 0.9375rem;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--linea-fuerte);
+  border-radius: 8px;
+  transition: border-color 0.1s var(--curva), box-shadow 0.1s var(--curva);
+}
+
+input:not([type="checkbox"]):focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--acento);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--acento) 25%, transparent);
+}
+
+textarea {
+  resize: vertical;
+}
+
+input[type="file"] {
+  padding: 0.45rem;
+  font-size: 0.8125rem;
+  color: var(--apagado);
+}
+
+.ayuda {
+  font-size: 0.8125rem;
+}
+
+.error {
+  font-size: 0.8125rem;
+  font-weight: 510;
+  color: var(--peligro);
+}
+
+/* Campo invisible que solo rellenan los bots */
+.trampa {
+  position: absolute;
+  left: -9999px;
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0 1.1rem;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 510;
+  color: var(--sobre-boton);
+  background: var(--boton);
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.16s var(--curva), transform 0.16s var(--curva),
+    border-color 0.16s var(--curva), background 0.16s var(--curva);
+}
+
+.boton:hover {
+  filter: brightness(1.12);
+}
+
+.boton:active {
+  transform: scale(0.97);
+}
+
+.boton.secundario {
+  color: var(--texto);
+  background: var(--superficie);
+  border-color: var(--linea-fuerte);
+}
+
+.boton.secundario:hover {
+  filter: none;
+  background: var(--superficie-2);
+}
+
+.boton.pequeno {
+  min-height: 2rem;
+  padding: 0 0.8rem;
+  font-size: 0.8125rem;
+}
+
+.botones {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+/* Botón con aspecto de enlace (acciones de las tablas) */
+.enlace {
+  padding: 0;
+  font: inherit;
+  color: var(--acento);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+  text-underline-offset: 0.22em;
+  cursor: pointer;
+}
+
+.enlace:hover {
+  text-decoration-color: currentColor;
+}
+
+.peligro {
+  color: var(--peligro);
+}
+
+.aviso {
+  max-width: 36rem;
+  padding: 0.7rem 1rem 0.7rem 1.1rem;
+  font-size: 0.9375rem;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-left: 2px solid var(--bien);
+  border-radius: 8px;
+  animation: entrar 0.5s var(--curva) both;
+}
+
+.aviso-error {
+  border-left-color: var(--peligro);
+}
+
+
+/* --------------------------------------------------------------------------
+   8. Pie de página y páginas centradas (acceso y errores)
+   -------------------------------------------------------------------------- */
+
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 2rem;
+  padding-block: 1.75rem 3rem;
+  border-top: 1px solid var(--linea);
+  font-size: 0.8125rem;
+  color: var(--tenue);
+}
+
+footer p {
+  margin: 0;
+}
+
+footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+footer a:hover {
+  color: var(--texto);
+}
+
+.centrado {
+  width: min(24rem, 100% - 2.5rem);
+  margin-inline: auto;
+  padding-block: 16vh 3rem;
+}
+
+.centrado h1 {
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  letter-spacing: -0.022em;
+}
+
+.centrado .formulario {
+  margin-bottom: 1.5rem;
+}
+
+.centrado .boton {
+  width: 100%;
+}
+
+
+/* --------------------------------------------------------------------------
+   9. Panel de administración
+   En móvil: bloque arriba con el menú deslizable. En escritorio: barra lateral.
+   -------------------------------------------------------------------------- */
+
+.admin-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.9rem 1.25rem;
+  background: var(--fondo-2);
+  border-bottom: 1px solid var(--linea);
+}
+
+.admin-marca {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.875rem;
+  font-weight: 510;
+  color: var(--texto);
+  text-decoration: none;
+}
+
+.admin-lateral nav {
+  display: flex;
+  gap: 0.15rem;
+  margin-inline: -0.65rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.admin-lateral nav a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.admin-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.admin-acciones > a {
+  margin-right: auto;
+  color: var(--apagado);
+  text-decoration: none;
+}
+
+.admin-acciones > a:hover {
+  color: var(--texto);
+}
+
+.admin-contenido {
+  width: min(64rem, 100% - 2.5rem);
+  margin-inline: auto;
+  padding-block: 2rem 4rem;
+  animation: entrar 0.5s var(--curva) both;
+}
+
+.admin h1 {
+  margin-bottom: 1rem;
+  font-size: 1.75rem;
+  line-height: 1.15;
+  letter-spacing: -0.022em;
+}
+
+.admin h2 {
+  margin: 2.5rem 0 1rem;
+  font-size: 1.125rem;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
+}
+
+.admin .migas {
+  margin-bottom: 0.75rem;
+}
+
+.fila-titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.fila-titulo h1 {
+  margin: 0;
+}
+
+.enlace-tarjeta {
+  text-decoration: none;
+  transition: border-color 0.16s var(--curva), background 0.16s var(--curva);
+}
+
+.enlace-tarjeta:hover {
+  border-color: var(--linea-fuerte);
+  background: var(--superficie-2);
+}
+
+.admin .enlace-tarjeta h2 {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 510;
+  color: var(--apagado);
+}
+
+.enlace-tarjeta .cifra {
+  font-size: 2rem;
+  font-weight: 510;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--texto);
+  font-variant-numeric: tabular-nums;
+}
+
+.cifra small {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--tenue);
+}
+
+.admin .logros li {
+  padding-block: 0.75rem;
+  max-width: 44rem;
+  font-size: 0.9375rem;
+  border-top: 1px solid var(--linea);
+}
+
+/* Tablas: si no caben en el móvil, se desplaza la tabla y no la página */
+.tabla-caja {
+  overflow-x: auto;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: 12px;
+  box-shadow: var(--sombra);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+th,
+td {
+  padding: 0.65rem 1rem;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--linea);
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+tbody tr {
+  transition: background 0.1s var(--curva);
+}
+
+tbody tr:hover {
+  background: var(--superficie-2);
+}
+
+th {
+  font-size: 0.75rem;
+  font-weight: 510;
+  color: var(--tenue);
+}
+
+td a {
+  color: var(--texto);
+  font-weight: 510;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 1.25rem;
+}
+
+td.acciones {
+  justify-content: flex-end;
+}
+
+td.acciones a {
+  color: var(--acento);
+  font-weight: 400;
+}
+
+.archivo-actual {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.archivo-actual label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 400;
+}
+
+.archivo-actual img {
+  max-width: 10rem;
+  max-height: 7rem;
+  border-radius: 8px;
+}
+
+.zona-borrar {
+  max-width: 36rem;
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--linea);
+}
+
+.mensaje {
+  max-width: 44rem;
+  margin-bottom: 0.75rem;
+  padding: 1.25rem;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: 12px;
+  box-shadow: var(--sombra);
+}
+
+.mensaje.sin-leer {
+  border-color: var(--linea-fuerte);
+}
+
+.admin .mensaje h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+}
+
+.mensaje p {
+  overflow-wrap: anywhere;
+}
+
+.mensaje .fechas a {
+  color: inherit;
+}
+
+
+/* --------------------------------------------------------------------------
+   10. Pantallas grandes
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 52rem) {
+  .dos {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 4rem;
+  }
+
+  /* Los proyectos destacados ocupan el doble de ancho */
+  .foco.destacada {
+    grid-column: span 2;
+  }
+
+  .foco.destacada h3 {
+    font-size: 1.5rem;
+    letter-spacing: -0.022em;
+  }
+
+  body.admin {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    min-height: 100vh;
+  }
+
+  .admin-lateral {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    padding: 1.25rem 1rem;
+    border-right: 1px solid var(--linea);
+    border-bottom: 0;
+  }
+
+  .admin-lateral nav {
+    flex-direction: column;
+    margin: 1rem 0 0;
+  }
+
+  .admin-lateral nav a {
+    padding-block: 0.4rem;
+  }
+
+  .admin-acciones {
+    margin-top: auto;
+  }
+
+  .admin-contenido {
+    width: min(60rem, 100% - 5rem);
+    padding-top: 3rem;
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   11. Accesibilidad: si el usuario pide menos movimiento, no se anima nada
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  @view-transition {
+    navigation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .js [data-reveal],
+  .js .grupo .nivel i.lleno {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}

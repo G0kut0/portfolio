@@ -1,0 +1,41 @@
+{% extends "publica.html" %}
+{% block titulo %}{{ p.titulo }} · {{ perfil.nombre }}{% endblock %}
+{% block descripcion %}{{ p.descripcion_corta }}{% endblock %}
+
+{% block cabecera %}
+    <div class="heroe heroe-corto">
+      <p class="migas entra" style="--i:0"><a href="{{ url_for('inicio') }}#proyectos">← Proyectos</a></p>
+      <h1 class="titulo-proyecto entra" style="--i:1">{{ p.titulo }}</h1>
+      <p class="lema entra" style="--i:2">{{ p.descripcion_corta }}</p>
+      <div class="haz" aria-hidden="true"></div>
+    </div>
+{% endblock %}
+
+{% block contenido %}
+    <section class="ancho ficha">
+      <div class="dos" data-reveal>
+        <div class="bio">
+          {% if p.imagen %}<img class="imagen-proyecto" src="{{ media(p.imagen) }}" alt="">{% endif %}
+          {{ p.descripcion_larga|parrafos }}
+        </div>
+        <aside class="panel">
+          {% if p.tecnologias %}
+          <h2 class="antetitulo">Tecnologías</h2>
+          <ul class="etiquetas">
+            {% for t in p.tecnologias|lista %}<li>{{ t }}</li>{% endfor %}
+          </ul>
+          {% endif %}
+          {% if p.fecha %}
+          <h2 class="antetitulo">Fecha</h2>
+          <p class="fechas">{{ p.fecha }}</p>
+          {% endif %}
+          {% if p.demo_url or p.repo_url %}
+          <p class="llamadas">
+            {% if p.demo_url %}<a class="boton" href="{{ p.demo_url }}">Ver demo</a>{% endif %}
+            {% if p.repo_url %}<a class="boton secundario" href="{{ p.repo_url }}" rel="noopener">Repositorio</a>{% endif %}
+          </p>
+          {% endif %}
+        </aside>
+      </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titulo %}{% block seccion %}Panel{% endblock %} · Administración{% endblock %}
+{% block clase_body %}admin{% endblock %}
+{% block cuerpo %}
+  <header class="admin-lateral">
+    <a class="admin-marca" href="{{ url_for('admin') }}"><span class="monograma">JA</span> Administración</a>
+    <nav aria-label="Administración">
+      {% set aqui = request.path %}
+      <a href="{{ url_for('admin') }}" {{ 'aria-current=page' if aqui == url_for('admin') }}>Panel</a>
+      <a href="{{ url_for('admin_perfil') }}" {{ 'aria-current=page' if aqui == url_for('admin_perfil') }}>Perfil</a>
+      {% for clave, ent in entidades.items() %}
+      <a href="{{ url_for('admin_lista', nombre=clave) }}" {{ 'aria-current=page' if aqui.startswith(url_for('admin_lista', nombre=clave)) }}>{{ ent.plural }}</a>
+      {% endfor %}
+      <a href="{{ url_for('admin_mensajes') }}" {{ 'aria-current=page' if aqui.startswith(url_for('admin_mensajes')) }}>Mensajes{% if g.sin_leer %} <span class="contador">{{ g.sin_leer }}</span>{% endif %}</a>
+      <a href="{{ url_for('admin_cuenta') }}" {{ 'aria-current=page' if aqui == url_for('admin_cuenta') }}>Cuenta</a>
+    </nav>
+    <div class="admin-acciones">
+      <a href="{{ url_for('inicio') }}">Ver la web ↗</a>
+      {% include "_tema.html" %}
+      <form method="post" action="{{ url_for('salir') }}">
+        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+        <button class="boton secundario pequeno" type="submit">Salir</button>
+      </form>
+    </div>
+  </header>
+  <main class="admin-contenido">
+    {% include "_avisos.html" %}
+    {% block contenido %}{% endblock %}
+  </main>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block titulo %}Entrar · Administración{% endblock %}
+{% block cuerpo %}
+  <main class="centrado entra">
+    <h1 class="pequeno">Administración</h1>
+    {% if error %}<p class="aviso aviso-error" role="alert">{{ error }}</p>{% endif %}
+    <form class="formulario panel" method="post">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      <p class="campo">
+        <label for="usuario">Usuario</label>
+        <input id="usuario" name="usuario" required autofocus autocomplete="username">
+      </p>
+      <p class="campo">
+        <label for="clave">Contraseña</label>
+        <input id="clave" name="clave" type="password" required autocomplete="current-password">
+      </p>
+      <button class="boton" type="submit">Entrar</button>
+    </form>
+    <p><a href="{{ url_for('inicio') }}">Volver a la web</a></p>
+  </main>
+{% endblock %}

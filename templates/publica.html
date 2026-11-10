@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block clase_body %}publica{% endblock %}
+{% block cuerpo %}
+  <div class="progreso" aria-hidden="true"></div>
+  <div class="barra-fija">
+    <div class="barra ancho">
+      <a class="monograma" href="{{ url_for('inicio') }}" aria-label="Inicio">{{ (perfil.nombre if perfil else 'JA').split()|map('first')|join('') }}</a>
+      <nav aria-label="Principal">
+        <a href="{{ url_for('inicio') }}#sobre-mi">Sobre mí</a>
+        <a href="{{ url_for('inicio') }}#proyectos">Proyectos</a>
+        <a href="{{ url_for('inicio') }}#habilidades">Habilidades</a>
+        <a href="{{ url_for('inicio') }}#formacion">Formación</a>
+        <a href="{{ url_for('inicio') }}#contacto">Contacto</a>
+      </nav>
+      {% include "_tema.html" %}
+    </div>
+  </div>
+
+  <header class="cabecera ancho">
+    {% block cabecera %}{% endblock %}
+  </header>
+
+  <main>
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <footer class="ancho">
+    <p>&copy; {{ perfil.nombre if perfil else 'José Antonio' }}</p>
+    <p><a href="{{ url_for('admin') }}">Administración</a></p>
+  </footer>
+{% endblock %}

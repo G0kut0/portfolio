@@ -1,0 +1,156 @@
+{% extends "publica.html" %}
+{% block titulo %}Portfolio de {{ perfil.nombre }}{% endblock %}
+{% block descripcion %}{{ perfil.nombre }}: {{ perfil.titular }}{% endblock %}
+
+{% macro tarjeta(p, i) %}
+<article class="tarjeta foco{% if p.destacado %} destacada{% endif %}" data-reveal style="--i:{{ i % 3 }}">
+  {% if p.imagen %}<img src="{{ media(p.imagen) }}" alt="" loading="lazy">{% endif %}
+  <p class="indice">{{ '%02d'|format(i + 1) }}{% if p.destacado %} <span class="marca">Destacado</span>{% endif %}</p>
+  <h3><a class="estirado" href="{{ url_for('proyecto', id=p.id) }}">{{ p.titulo }}</a></h3>
+  <p>{{ p.descripcion_corta }}</p>
+  {% if p.tecnologias %}
+  <ul class="etiquetas" aria-label="Tecnologías">
+    {% for t in p.tecnologias|lista %}<li>{{ t }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  <span class="flecha" aria-hidden="true">→</span>
+</article>
+{% endmacro %}
+
+{% macro cabeza(numero, titulo) %}
+<div class="cabeza" data-reveal>
+  <p class="antetitulo">{{ numero }}</p>
+  <h2>{{ titulo }}</h2>
+</div>
+{% endmacro %}
+
+{% block cabecera %}
+    <div class="heroe">
+      <p class="antetitulo entra" style="--i:0"><span class="pulso" aria-hidden="true"></span>{{ perfil.ubicacion or 'Portfolio' }}</p>
+      <div class="presentacion">
+        {% if perfil.foto %}<img class="foto entra" style="--i:1" src="{{ media(perfil.foto) }}" alt="Foto de {{ perfil.nombre }}">{% endif %}
+        <h1 aria-label="{{ perfil.nombre }}">{% for palabra in perfil.nombre.split() %}<span class="entra" style="--i:{{ loop.index }}" aria-hidden="true">{{ palabra }}</span> {% endfor %}</h1>
+      </div>
+      <p class="lema entra" style="--i:3">{{ perfil.titular }}</p>
+      <p class="llamadas entra" style="--i:4">
+        <a class="boton" href="#proyectos">Ver proyectos</a>
+        <a class="boton secundario" href="#contacto">Contacto</a>
+      </p>
+      <div class="haz" aria-hidden="true"></div>
+    </div>
+{% endblock %}
+
+{% block contenido %}
+    <section id="sobre-mi" class="ancho">
+      {{ cabeza('01', 'Sobre mí') }}
+      <div class="dos" data-reveal>
+        <div class="bio">{{ perfil.bio|parrafos }}</div>
+        <ul class="datos">
+          {% if perfil.ubicacion %}<li><span>Ubicación</span>{{ perfil.ubicacion }}</li>{% endif %}
+          {% if perfil.email %}<li><span>Email</span><a href="mailto:{{ perfil.email }}">{{ perfil.email }}</a></li>{% endif %}
+          {% if perfil.github %}<li><span>GitHub</span><a href="{{ perfil.github }}" rel="me noopener">{{ perfil.github|replace('https://', '')|trim('/') }}</a></li>{% endif %}
+          {% if perfil.linkedin %}<li><span>LinkedIn</span><a href="{{ perfil.linkedin }}" rel="me noopener">Ver perfil</a></li>{% endif %}
+          {% if perfil.instagram %}<li><span>Instagram</span><a href="{{ perfil.instagram }}" rel="me noopener">Ver perfil</a></li>{% endif %}
+          {% if perfil.otra_red %}<li><span>Web</span><a href="{{ perfil.otra_red }}" rel="me noopener">Visitar</a></li>{% endif %}
+          {% if perfil.cv %}<li><span>Currículum</span><a href="{{ media(perfil.cv) }}">Descargar PDF</a></li>{% endif %}
+        </ul>
+      </div>
+    </section>
+
+    <section id="proyectos" class="ancho">
+      {{ cabeza('02', 'Proyectos') }}
+      {% if proyectos %}
+      <div class="rejilla">{% for p in proyectos %}{{ tarjeta(p, loop.index0) }}{% endfor %}</div>
+      {% endif %}
+      {% if proyectos_hw %}
+      <h3 class="subtitulo" data-reveal>Hardware y otros proyectos</h3>
+      <div class="rejilla">{% for p in proyectos_hw %}{{ tarjeta(p, loop.index0 + proyectos|length) }}{% endfor %}</div>
+      {% endif %}
+      {% if not proyectos and not proyectos_hw %}<p class="vacio">Pronto habrá proyectos aquí.</p>{% endif %}
+    </section>
+
+    {% if habilidades %}
+    <section id="habilidades" class="ancho">
+      {{ cabeza('03', 'Habilidades') }}
+      <div class="grupos">
+        {% for categoria, lista_h in habilidades.items() %}
+        <div class="grupo" data-reveal style="--i:{{ loop.index0 % 3 }}">
+          <h3>{{ categoria }}</h3>
+          <ul class="niveles">
+            {% for h in lista_h %}
+            <li>
+              <span>{{ h.nombre }}</span>
+              <span class="nivel" role="img" aria-label="Nivel {{ h.nivel }} de 5">{% for i in range(1, 6) %}<i class="{{ 'lleno' if i <= h.nivel }}" style="--n:{{ i }}"></i>{% endfor %}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if formacion %}
+    <section id="formacion" class="ancho">
+      {{ cabeza('04', 'Formación') }}
+      <ol class="linea-tiempo">
+        {% for f in formacion %}
+        <li class="estudio" data-reveal>
+          <p class="fechas">{% if f.fecha_inicio %}{{ f.fecha_inicio }} – {% endif %}{{ f.fecha_fin or 'en curso' }}</p>
+          <h3>{{ f.titulacion }}</h3>
+          <p class="centro">{{ f.centro }}</p>
+          {{ f.descripcion|parrafos }}
+        </li>
+        {% endfor %}
+      </ol>
+    </section>
+    {% endif %}
+
+    {% if logros %}
+    <section id="logros" class="ancho">
+      {{ cabeza('05', 'Logros') }}
+      <ul class="logros rejilla">
+        {% for l in logros %}
+        <li class="tarjeta" data-reveal style="--i:{{ loop.index0 % 3 }}">
+          {% if l.fecha %}<span class="fechas">{{ l.fecha }}</span>{% endif %}
+          <strong>{{ l.titulo }}</strong>
+          {% if l.descripcion %}<p>{{ l.descripcion }}</p>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    <section id="contacto" class="ancho">
+      {{ cabeza('06' if logros else '05', 'Contacto') }}
+      <div class="dos" data-reveal>
+        <div>
+          <p class="grande">¿Tienes un proyecto o una pregunta? Escríbeme y te respondo en cuanto pueda.</p>
+          {% if perfil.email %}<p><a href="mailto:{{ perfil.email }}">{{ perfil.email }}</a></p>{% endif %}
+        </div>
+        <div>
+          {% include "_avisos.html" %}
+          <form class="formulario panel" method="post" action="{{ url_for('contacto') }}" novalidate>
+            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+            <p class="trampa" aria-hidden="true"><label>No rellenes este campo <input type="text" name="web" tabindex="-1" autocomplete="off"></label></p>
+            <p class="campo">
+              <label for="c-nombre">Nombre</label>
+              <input id="c-nombre" name="nombre" maxlength="100" required autocomplete="name" value="{{ form.nombre or '' }}">
+              {% if errores.nombre %}<span class="error">{{ errores.nombre }}</span>{% endif %}
+            </p>
+            <p class="campo">
+              <label for="c-email">Email</label>
+              <input id="c-email" name="email" type="email" maxlength="200" required autocomplete="email" value="{{ form.email or '' }}">
+              {% if errores.email %}<span class="error">{{ errores.email }}</span>{% endif %}
+            </p>
+            <p class="campo">
+              <label for="c-mensaje">Mensaje</label>
+              <textarea id="c-mensaje" name="mensaje" rows="5" maxlength="5000" required>{{ form.mensaje or '' }}</textarea>
+              {% if errores.mensaje %}<span class="error">{{ errores.mensaje }}</span>{% endif %}
+            </p>
+            <button class="boton" type="submit">Enviar mensaje</button>
+          </form>
+        </div>
+      </div>
+    </section>
+{% endblock %}

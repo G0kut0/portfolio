@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+{% block seccion %}{{ titulo }}{% endblock %}
+{% block contenido %}
+    {% if volver %}<p class="migas"><a href="{{ volver }}">← Volver a la lista</a></p>{% endif %}
+    <h1>{{ titulo }}</h1>
+    {% if errores %}<p class="aviso aviso-error" role="alert">No se ha guardado: revisa los campos marcados.</p>{% endif %}
+    <form class="formulario" method="post" enctype="multipart/form-data" novalidate>
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      {% for nombre, etiqueta, tipo, op in campos %}
+      {% set v = valores[nombre] %}
+      <div class="campo{% if tipo == 'si_no' %} campo-casilla{% endif %}">
+        {% if tipo == 'si_no' %}
+        <label><input type="checkbox" name="{{ nombre }}" value="1" {{ 'checked' if v }}> {{ etiqueta }}</label>
+        {% else %}
+        <label for="f-{{ nombre }}">{{ etiqueta }}{% if op.obligatorio %} <span class="apagado">(obligatorio)</span>{% endif %}</label>
+        {% if tipo == 'largo' %}
+        <textarea id="f-{{ nombre }}" name="{{ nombre }}" rows="6">{{ v }}</textarea>
+        {% elif tipo == 'opcion' %}
+        <select id="f-{{ nombre }}" name="{{ nombre }}">
+          {% for valor, texto in op.opciones %}<option value="{{ valor }}" {{ 'selected' if v == valor }}>{{ texto }}</option>{% endfor %}
+        </select>
+        {% elif tipo == 'nivel' %}
+        <select id="f-{{ nombre }}" name="{{ nombre }}">
+          {% for n in range(1, 6) %}<option value="{{ n }}" {{ 'selected' if v|string == n|string }}>{{ n }}</option>{% endfor %}
+        </select>
+        {% elif tipo in ('imagen', 'pdf') %}
+        {% if v %}
+        <p class="archivo-actual">
+          {% if tipo == 'imagen' %}<img src="{{ media(v) }}" alt="Imagen actual">{% else %}<a href="{{ media(v) }}">Ver el PDF actual</a>{% endif %}
+          <label><input type="checkbox" name="{{ nombre }}_quitar" value="1"> Quitar</label>
+        </p>
+        {% endif %}
+        <input id="f-{{ nombre }}" name="{{ nombre }}" type="file" accept="{{ 'image/png,image/jpeg,image/webp,image/gif' if tipo == 'imagen' else 'application/pdf' }}">
+        {% else %}
+        <input id="f-{{ nombre }}" name="{{ nombre }}" value="{{ v }}"
+               type="{{ {'fecha': 'date', 'email': 'email'}.get(tipo, 'text') }}"
+               {% if tipo == 'url' %}inputmode="url" placeholder="https://"{% endif %}>
+        {% endif %}
+        {% endif %}
+        {% if op.ayuda %}<span class="ayuda">{{ op.ayuda }}</span>{% endif %}
+        {% if errores[nombre] %}<span class="error">{{ errores[nombre] }}</span>{% endif %}
+      </div>
+      {% endfor %}
+      <p class="botones">
+        <button class="boton" type="submit">Guardar</button>
+        {% if volver %}<a href="{{ volver }}">Cancelar</a>{% endif %}
+      </p>
+    </form>
+    {% if borrar %}
+    <form class="zona-borrar" method="post" action="{{ borrar }}" data-confirmar="¿Borrar definitivamente? No se puede deshacer.">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      <button class="enlace peligro" type="submit">Borrar</button>
+    </form>
+    {% endif %}
+{% endblock %}

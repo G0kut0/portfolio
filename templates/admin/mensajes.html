@@ -1,0 +1,27 @@
+{% extends "admin/base.html" %}
+{% block seccion %}Mensajes{% endblock %}
+{% block contenido %}
+    <h1>Mensajes de contacto</h1>
+    {% for m in filas %}
+    <article class="mensaje{% if not m.leido %} sin-leer{% endif %}">
+      <header>
+        <h2>{% if not m.leido %}<span class="marca">Nuevo</span> {% endif %}{{ m.nombre }}</h2>
+        <p class="fechas"><a href="mailto:{{ m.email }}">{{ m.email }}</a> · {{ m.fecha }} (UTC)</p>
+      </header>
+      {{ m.mensaje|parrafos }}
+      <div class="acciones">
+        <a href="mailto:{{ m.email }}">Responder</a>
+        <form method="post" action="{{ url_for('admin_mensaje_accion', id=m.id, accion='no-leido' if m.leido else 'leido') }}">
+          <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+          <button class="enlace" type="submit">{{ 'Marcar como no leído' if m.leido else 'Marcar como leído' }}</button>
+        </form>
+        <form method="post" action="{{ url_for('admin_mensaje_accion', id=m.id, accion='borrar') }}" data-confirmar="¿Borrar el mensaje de {{ m.nombre }}? No se puede deshacer.">
+          <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+          <button class="enlace peligro" type="submit">Borrar</button>
+        </form>
+      </div>
+    </article>
+    {% else %}
+    <p class="vacio">Todavía no has recibido mensajes.</p>
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block titulo %}Error {{ codigo }}{% endblock %}
+{% block cuerpo %}
+  <main class="centrado entra">
+    <h1>{{ codigo }}</h1>
+    <p>{{ mensaje }}</p>
+    <p><a href="{{ url_for('inicio') }}">Volver al inicio</a></p>
+  </main>
+{% endblock %}
