@@ -27,7 +27,7 @@ inicial. A partir de ahí todo se edita desde el panel.
 | `db.py` | Conexión a SQLite y contenido inicial. |
 | `schema.sql` | Las 7 tablas: `perfil`, `proyectos`, `habilidades`, `formacion`, `logros`, `mensajes_contacto`, `usuarios_admin`. |
 | `templates/` | Plantillas HTML (las del panel, en `templates/admin/`). |
-| `static/` | CSS, JavaScript y la calculadora TLAP. |
+| `static/` | CSS y JavaScript (incluidos los de la calculadora TLAP, cuya página es `templates/calculadora.html`). |
 | `uploads/` | Imágenes y PDF subidos desde el panel (no se guardan en git). |
 | `instance/` | Base de datos y clave de sesión (no se guardan en git). |
 

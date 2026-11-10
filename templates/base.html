@@ -20,11 +20,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ estatico('css/style.css') }}">
+{% block cabeza %}{% endblock %}
 </head>
 
 <body class="{% block clase_body %}{% endblock %}">
 {% block cuerpo %}{% endblock %}
   <script src="{{ estatico('js/main.js') }}" defer></script>
+{% block scripts %}{% endblock %}
 </body>
 
 </html>

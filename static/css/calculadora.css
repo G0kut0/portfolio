@@ -1,0 +1,464 @@
+/* ==========================================================================
+   Calculadora de eficiencia TLAP
+   Usa las variables y componentes de style.css (paneles, botones, tipografía)
+   y añade aquí solo lo propio de la calculadora.
+   ========================================================================== */
+
+/* Colores de las tres curvas y de la gráfica, por modo */
+.calc {
+  --c0: #0b74c4;
+  --c1: #b26a00;
+  --c2: #d1335f;
+  --rejilla: rgba(0, 0, 0, 0.08);
+  --pista: rgba(0, 0, 0, 0.07);
+  --lienzo: #ffffff;       /* fondo sobre el que se dibuja la gráfica */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .calc {
+    --c0: #5ec8ff;
+    --c1: #ffd166;
+    --c2: #ff7a90;
+    --rejilla: rgba(255, 255, 255, 0.07);
+    --pista: rgba(255, 255, 255, 0.07);
+    --lienzo: #0f1011;
+  }
+}
+
+:root[data-theme="dark"] .calc {
+  --c0: #5ec8ff;
+  --c1: #ffd166;
+  --c2: #ff7a90;
+  --rejilla: rgba(255, 255, 255, 0.07);
+  --pista: rgba(255, 255, 255, 0.07);
+  --lienzo: #0f1011;
+}
+
+.calc main {
+  padding-block: clamp(2rem, 5vw, 3.5rem) clamp(4rem, 10vw, 7rem);
+}
+
+.intro {
+  margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.intro p {
+  max-width: 68ch;
+  color: var(--apagado);
+}
+
+.intro p:last-child {
+  margin-bottom: 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   Estructura: gráfica a la izquierda y controles a la derecha
+   -------------------------------------------------------------------------- */
+
+.app {
+  display: grid;
+  gap: 1rem;
+}
+
+.app > .panel {
+  min-width: 0;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  background: var(--lienzo);
+}
+
+@media (min-width: 60rem) {
+  .app {
+    grid-template-columns: minmax(0, 1fr) 21.5rem;
+    align-items: start;
+  }
+
+  .controles {
+    position: sticky;
+    top: 4.5rem; /* por debajo de la barra fija */
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   Gráfica y lectura
+   -------------------------------------------------------------------------- */
+
+#caja-grafico {
+  width: 100%;
+}
+
+#grafico {
+  display: block;
+  width: 100%;
+  touch-action: pan-y;
+  cursor: crosshair;
+  border-radius: 6px;
+}
+
+#grafico:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 4px;
+}
+
+#grafico text {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--apagado);
+}
+
+#grafico .nombre-banda,
+#grafico .titulo-eje {
+  font-family: var(--sans);
+}
+
+#grafico .titulo-eje {
+  font-size: 12px;
+}
+
+.ayuda-grafico {
+  max-width: none;
+  margin: 0.6rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--tenue);
+}
+
+/* Valores en el cursor: fichas pequeñas */
+.lectura {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(10.5rem, 100%), 1fr));
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--linea);
+}
+
+.dato {
+  padding: 0.7rem 0.85rem;
+  background: var(--superficie-2);
+  border-radius: 8px;
+}
+
+.dato .nombre {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-size: 0.75rem;
+  color: var(--apagado);
+}
+
+.dato .valor {
+  font-family: var(--mono);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--texto);
+  font-variant-numeric: tabular-nums;
+}
+
+.dato .valor small {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--tenue);
+}
+
+.punto {
+  display: inline-block;
+  flex: none;
+  width: 0.6rem;
+  height: 0.6rem;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+}
+
+
+/* --------------------------------------------------------------------------
+   Controles
+   -------------------------------------------------------------------------- */
+
+.controles fieldset {
+  min-width: 0;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  border: 0;
+}
+
+.controles legend {
+  margin-bottom: 0.7rem;
+  padding: 0;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tenue);
+}
+
+/* Selector de escenario: una píldora con tres opciones */
+.segmentos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  padding: 3px;
+  background: var(--superficie-2);
+  border-radius: 9999px;
+}
+
+.segmentos label {
+  position: relative;
+}
+
+.segmentos input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.segmentos span {
+  display: block;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 510;
+  text-align: center;
+  color: var(--apagado);
+  border-radius: 9999px;
+  transition: background 0.16s var(--curva), color 0.16s var(--curva);
+}
+
+.segmentos label:hover span {
+  color: var(--texto);
+}
+
+.segmentos input:checked + span {
+  color: var(--sobre-boton);
+  background: var(--boton);
+}
+
+.segmentos input:focus-visible + span {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.nota-escenario {
+  margin: 0.6rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--apagado);
+}
+
+.deslizador {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 0.15rem 0.75rem;
+  margin-bottom: 1.1rem;
+}
+
+.deslizador label {
+  font-size: 0.875rem;
+  color: var(--texto);
+}
+
+.deslizador output {
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--texto);
+}
+
+.deslizador .entrada {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.unidad {
+  font-size: 0.8125rem;
+  color: var(--tenue);
+}
+
+.calc input[type="number"] {
+  width: 5.75rem;
+  padding: 0.3rem 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  letter-spacing: 0;
+  border-radius: 6px;
+}
+
+.calc input[type="range"] {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  accent-color: var(--acento);
+}
+
+.calc input[type="range"]:focus {
+  box-shadow: none;
+}
+
+.calc input[type="range"]:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 4px;
+}
+
+.fila-rs {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.15rem 0.35rem;
+  margin-bottom: 0.8rem;
+}
+
+.fila-rs .campo {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.fila-rs .resultado {
+  grid-column: 2;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0;
+  color: var(--apagado);
+}
+
+.opcion {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.875rem;
+  color: var(--texto);
+}
+
+.opcion input {
+  margin-top: 0.25rem;
+}
+
+.controles .ayuda {
+  display: block;
+  margin: 0 0 1.25rem 1.6rem;
+}
+
+.restablecer {
+  width: 100%;
+  min-height: 2.25rem;
+  padding: 0 1rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 510;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--linea-fuerte);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 0.16s var(--curva), transform 0.16s var(--curva);
+}
+
+.restablecer:hover {
+  background: var(--superficie-2);
+}
+
+.restablecer:active {
+  transform: scale(0.98);
+}
+
+
+/* --------------------------------------------------------------------------
+   Notas desplegables
+   -------------------------------------------------------------------------- */
+
+.notas {
+  grid-column: 1 / -1;
+  max-width: 46rem;
+  margin-top: clamp(1.5rem, 4vw, 3rem);
+}
+
+.notas details {
+  border-top: 1px solid var(--linea);
+}
+
+.notas details:last-child {
+  border-bottom: 1px solid var(--linea);
+}
+
+.notas summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+  font-weight: 510;
+  color: var(--texto);
+  cursor: pointer;
+  list-style: none;
+}
+
+.notas summary::-webkit-details-marker {
+  display: none;
+}
+
+.notas summary::after {
+  content: "+";
+  font-family: var(--mono);
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: var(--tenue);
+  transition: transform 0.16s var(--curva);
+}
+
+.notas details[open] summary::after {
+  transform: rotate(45deg);
+}
+
+.notas summary:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.notas details > :not(summary) {
+  margin: 0 0 1rem;
+  font-size: 0.9375rem;
+  color: var(--apagado);
+}
+
+.notas ol,
+.notas ul {
+  padding-left: 1.25rem;
+}
+
+.notas li {
+  margin-bottom: 0.4rem;
+}
+
+.formula {
+  padding: 0.05rem 0.35rem;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0;
+  color: var(--texto);
+  background: var(--superficie-2);
+  border-radius: 4px;
+}
+
+.notas td:first-child {
+  font-weight: 510;
+  color: var(--texto);
+}
+
+.notas td {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0;
+  color: var(--texto-2);
+}
+
+.notas td:first-child {
+  font-family: var(--sans);
+}

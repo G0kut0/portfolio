@@ -361,7 +361,9 @@ def crear_app(config=None):
 
     @app.route("/calculadora/")
     def calculadora():
-        return send_from_directory(os.path.join(app.static_folder, "calculadora"), "index.html")
+        return render_template(
+            "calculadora.html",
+            perfil=get_db().execute("SELECT * FROM perfil WHERE id = 1").fetchone())
 
     @app.route("/media/<path:nombre>")
     def archivo(nombre):

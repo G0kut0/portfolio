@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block titulo %}Calculadora de eficiencia TLAP · {{ perfil.nombre }}{% endblock %}
+{% block descripcion %}Calculadora interactiva de la eficiencia de la transmisión láser de alta potencia (TLAP) en la Tierra, Marte y la Luna.{% endblock %}
+{% block clase_body %}publica calc{% endblock %}
+{% block cabeza %}
+  <link rel="stylesheet" href="{{ estatico('css/calculadora.css') }}">
+{% endblock %}
+
+{% block cuerpo %}
+  <div class="barra-fija">
+    <div class="barra ancho">
+      <a class="monograma" href="{{ url_for('inicio') }}" aria-label="Inicio">{{ perfil.nombre.split()|map('first')|join('') }}</a>
+      <nav aria-label="Principal">
+        <a href="{{ url_for('inicio') }}#proyectos">← Volver al portfolio</a>
+      </nav>
+      {% include "_tema.html" %}
+    </div>
+  </div>
+
+  <header class="cabecera ancho">
+    <div class="heroe heroe-corto">
+      <p class="antetitulo entra" style="--i:0">Simulador · Trabajo de fin de bachiller</p>
+      <h1 class="titulo-proyecto entra" style="--i:1">Calculadora de eficiencia TLAP</h1>
+      <p class="lema entra" style="--i:2">Cuánta potencia de un láser se convierte en electricidad en la Tierra, Marte y la Luna.</p>
+      <div class="haz" aria-hidden="true"></div>
+    </div>
+  </header>
+
+  <main class="ancho">
+    <div class="intro entra" style="--i:3">
+      <p>TLAP significa transmisión láser de alta potencia: enviar energía a distancia con un haz láser y recogerla con una célula fotovoltaica. Esta calculadora estima qué parte de esa potencia se convierte en electricidad.</p>
+      <p>El resultado depende de la longitud de onda del láser, del medio que atraviesa (atmósfera terrestre, marciana o vacío) y de la resistencia interna de la célula. Mueve el cursor sobre la gráfica para ver cada valor.</p>
+    </div>
+
+    <div class="app">
+    <div class="panel zona-grafico entra" style="--i:3">
+      <div id="caja-grafico">
+        <svg id="grafico" tabindex="0" role="img" aria-label="Gráfica de eficiencia frente a longitud de onda"></svg>
+      </div>
+      <p class="ayuda-grafico">Toca o pasa el cursor por la gráfica para leer un valor. Con el teclado, enfoca la gráfica y usa las flechas izquierda y derecha (con Mayús avanza más rápido).</p>
+      <div class="lectura" id="lectura"></div>
+    </div>
+
+    <form class="controles panel entra" style="--i:4" id="controles">
+      <fieldset>
+        <legend>Escenario</legend>
+        <div class="segmentos">
+          <label><input type="radio" name="esc" value="tierra" checked><span>Tierra</span></label>
+          <label><input type="radio" name="esc" value="marte"><span>Marte</span></label>
+          <label><input type="radio" name="esc" value="luna"><span>Luna</span></label>
+        </div>
+        <p class="nota-escenario" id="nota-escenario"></p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Parámetros</legend>
+        <div class="deslizador">
+          <label for="temp">Temperatura de la célula</label>
+          <output id="out-temp" for="temp"></output>
+          <input type="range" id="temp" min="100" max="500" step="1" value="298">
+        </div>
+        <div class="deslizador">
+          <label for="pot">Potencia del láser</label>
+          <span class="entrada"><input type="number" id="pot-num" min="1" max="1000" step="any" value="100" aria-label="Potencia del láser, valor exacto"> <span class="unidad">W/cm²</span></span>
+          <input type="range" id="pot" min="1" max="1000" step="1" value="100">
+        </div>
+        <div class="deslizador">
+          <label for="eqe">Eficiencia cuántica externa (EQE)</label>
+          <output id="out-eqe" for="eqe"></output>
+          <input type="range" id="eqe" min="0.5" max="1" step="0.01" value="0.85">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Resistencia en serie de la célula</legend>
+        <div class="fila-rs">
+          <span class="punto" style="background: var(--c0)"></span>
+          <div class="campo"><input type="number" id="rs0" min="0" max="0.1" step="0.001" value="0" aria-label="Resistencia en serie, curva azul"><span class="unidad">Ω·cm²</span></div>
+          <span class="resultado" id="res0"></span>
+        </div>
+        <div class="fila-rs">
+          <span class="punto" style="background: var(--c1)"></span>
+          <div class="campo"><input type="number" id="rs1" min="0" max="0.1" step="0.001" value="0.001" aria-label="Resistencia en serie, curva amarilla"><span class="unidad">Ω·cm²</span></div>
+          <span class="resultado" id="res1"></span>
+        </div>
+        <div class="fila-rs">
+          <span class="punto" style="background: var(--c2)"></span>
+          <div class="campo"><input type="number" id="rs2" min="0" max="0.1" step="0.001" value="0.01" aria-label="Resistencia en serie, curva rosa"><span class="unidad">Ω·cm²</span></div>
+          <span class="resultado" id="res2"></span>
+        </div>
+      </fieldset>
+
+      <div class="opcion">
+        <input type="checkbox" id="corregir" checked>
+        <label for="corregir">Corregir las unidades de J₀</label>
+      </div>
+      <p class="ayuda">Desmárcala para reproducir los resultados de la memoria original. Los detalles están en las notas.</p>
+
+      <button type="button" class="restablecer" id="restablecer">Restablecer valores</button>
+    </form>
+
+    <div class="notas" data-reveal>
+      <details>
+        <summary>Cómo se calcula</summary>
+        <ol>
+          <li>Para cada longitud de onda λ se supone una célula cuya banda prohibida es <span class="formula">Egap = hc/λ</span>, es decir, ajustada al láser.</li>
+          <li>La corriente fotogenerada es <span class="formula">Jph = q · EQE · P / Efotón</span>, donde P es la potencia que llega al receptor: la potencia enviada multiplicada por la transmitancia del medio.</li>
+          <li>La corriente de saturación J₀ sale del límite radiativo (balance detallado) y depende de Egap y de la temperatura.</li>
+          <li>La tensión de la célula es <span class="formula">V(J) = (kT/q) · ln((Jph − J)/J₀ + 1) − J · Rs</span>.</li>
+          <li>Se busca la corriente que maximiza la potencia J·V (el punto de máxima potencia). La eficiencia es esa potencia dividida entre la potencia enviada.</li>
+        </ol>
+        <p>Las franjas sombreadas de la gráfica marcan los rangos de longitud de onda que alcanzan los materiales InAlN, InGaN y GaAs, según mi trabajo. La franja de colores bajo el eje es la luz visible.</p>
+      </details>
+
+      <details>
+        <summary>Qué cambia respecto a la memoria original</summary>
+        <p>En la memoria, J₀ se calculaba en unidades del Sistema Internacional (A/m²) y la corriente fotogenerada en A/cm². Esa diferencia de un factor 10⁴ hacía que J₀ fuese demasiado grande y que la tensión de la célula saliera unos 0,2 V más baja de lo que corresponde. Esta calculadora corrige las unidades por defecto.</p>
+        <p>Máximo de eficiencia con los valores por defecto (100 W/cm², EQE 0,85, resistencia en serie nula):</p>
+        <div class="tabla-caja">
+          <table>
+            <thead><tr><th>Escenario</th><th>Memoria original</th><th>Con la corrección</th></tr></thead>
+            <tbody id="tabla-cambios"></tbody>
+          </table>
+        </div>
+        <p>Con la corrección, en la Tierra la longitud de onda óptima pasa de la zona visible al infrarrojo cercano, donde se encuentra el GaAs. Esto cambia la comparación entre materiales de la memoria original. En la Luna, la eficiencia sigue creciendo hacia longitudes de onda muy cortas, que exigirían una banda prohibida inalcanzable con los materiales actuales.</p>
+      </details>
+
+      <details>
+        <summary>Datos y créditos</summary>
+        <p>La transmitancia de la atmósfera terrestre y de la marciana procede del Planetary Spectrum Generator (NASA-GSFC; Villanueva et al., 2018). En la Luna se supone transmitancia total. El modelo es el simulador en Python de mi trabajo de investigación de bachillerato (2025), reescrito en JavaScript.</p>
+      </details>
+    </div>
+  </div>
+  </main>
+
+  <footer class="ancho">
+    <p>&copy; {{ perfil.nombre }}</p>
+    <p><a href="{{ url_for('inicio') }}">Volver al portfolio</a></p>
+  </footer>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ estatico('js/calculadora.js') }}" defer></script>
+{% endblock %}
