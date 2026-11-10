@@ -42,14 +42,47 @@ inicial. A partir de ahí todo se edita desde el panel.
   aleatorio y se borran del disco al sustituirlas o quitarlas.
 - Ni la base de datos, ni la clave de sesión, ni las subidas se guardan en git.
 
-## Publicarla en internet
+## Publicarla en internet (PythonAnywhere)
 
-`flask run` es solo para desarrollo. En un servidor, usa un servidor WSGI
-(por ejemplo `gunicorn app:app`) detrás de HTTPS y define `COOKIES_SEGURAS=1`
-para que la cookie de sesión solo viaje cifrada. No actives nunca el modo debug
-(`--debug` o `FLASK_DEBUG=1`) en un servidor público: permite ejecutar código.
-Si hay un proxy delante (nginx, etc.), configura `ProxyFix` de Werkzeug para que el
-freno por IP vea la dirección real del visitante. Haz copia de `instance/` y `uploads/`.
+`flask run` es solo para desarrollo. Pasos para publicarla en PythonAnywhere,
+cambiando `USUARIO` por tu nombre de usuario:
+
+1. En una consola **Bash** de PythonAnywhere:
+
+   ```bash
+   git clone https://github.com/G0kut0/portfolio.git
+   cd portfolio
+   python3 -m venv .venv
+   .venv/bin/pip install -r requirements.txt
+   .venv/bin/flask --app app crear-admin
+   ```
+
+2. En la pestaña **Web**: *Add a new web app* → *Manual configuration* → la versión
+   de Python más reciente. Después:
+   - **Virtualenv**: `/home/USUARIO/portfolio/.venv`
+   - **Static files**: URL `/static/` → carpeta `/home/USUARIO/portfolio/static/`
+   - **Force HTTPS**: activado
+
+3. Sustituye el contenido del **archivo WSGI** (el enlace está en la pestaña Web) por:
+
+   ```python
+   import os
+   import sys
+
+   sys.path.insert(0, "/home/USUARIO/portfolio")
+   os.environ["COOKIES_SEGURAS"] = "1"   # la cookie de sesión solo viaja por HTTPS
+   os.environ["PROXY"] = "1"             # el freno por IP ve la IP real del visitante
+
+   from app import app as application
+   ```
+
+4. Pulsa **Reload**. La web queda en `https://USUARIO.pythonanywhere.com`.
+
+Para actualizarla más adelante: `git pull` en la consola y **Reload** en la pestaña Web.
+Haz copia de vez en cuando de `instance/` (base de datos) y `uploads/` (archivos subidos).
+
+No actives nunca el modo debug (`--debug` o `FLASK_DEBUG=1`) en un servidor público:
+permite ejecutar código.
 
 ## Diseño
 

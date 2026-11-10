@@ -129,6 +129,12 @@ def crear_app(config=None):
     os.makedirs(app.config["UPLOADS"], exist_ok=True)
     app.secret_key = os.environ.get("SECRET_KEY") or _clave_secreta()
 
+    # Detrás de un proxy (PythonAnywhere, nginx...) la IP real del visitante
+    # llega en una cabecera. Solo se confía en ella si se pide con PROXY=1.
+    if os.environ.get("PROXY") == "1":
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+
     init_db(app.config["DATABASE"])
     seed_db(app.config["DATABASE"], None, None)
     app.teardown_appcontext(close_db)
